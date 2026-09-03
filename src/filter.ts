@@ -1,12 +1,18 @@
 import { JobInput, FilterResult } from './types.js';
 
-const PREFERRED_KEYWORDS = [
+export const PREFERRED_KEYWORDS = [
   'Software Engineer',
+  'Software Developer',
   'Full Stack Developer',
   'Backend Engineer',
   'Frontend Developer',
   'Infrastructure Engineer',
   'Cloud Engineer',
+  'DevOps Engineer',
+  'Platform Engineer',
+  'Site Reliability Engineer',
+  'Data Engineer',
+  'Security Engineer',
   'Python Developer',
   'Go Developer',
   'Node.js Developer',
@@ -16,6 +22,7 @@ const PREFERRED_KEYWORDS = [
 
 const EXCLUDE_KEYWORDS = [
   'Manager',
+  'Management',
   'Architect',
   'Mentor',
   'Designer',
@@ -24,11 +31,27 @@ const EXCLUDE_KEYWORDS = [
   'Head of',
 ];
 
-function isRemote(job: JobInput): boolean {
+function isFullyRemote(job: JobInput): boolean {
   const rt = (job.remote_type || '').toLowerCase();
   const loc = (job.location || '').toLowerCase();
-  // Fully remote only. Hybrid and onsite are not accepted.
-  return rt === 'remote' || loc.includes('remote');
+  const remoteDetails = `${rt} ${loc}`;
+
+  // Explicit hybrid, onsite, and remote-friendly language never qualifies.
+  if (
+    /\bhybrid\b|\bon[-\s]?site\b|\bin[-\s]?office\b/.test(remoteDetails) ||
+    /\bremote[-\s]?friendly\b|\bremote[-\s]?optional\b|\bremote[-\s]?possible\b/.test(remoteDetails)
+  ) {
+    return false;
+  }
+
+  // An explicit remote_type is authoritative. Unknown values are not assumed
+  // to mean fully remote.
+  if (rt) {
+    return rt === 'remote';
+  }
+
+  // With no remote_type, accept only an unambiguous remote location.
+  return /\bremote\b/.test(loc);
 }
 
 function matchesPreferred(text: string): string | null {
@@ -52,7 +75,7 @@ function matchesExcludeTitle(title: string): string | null {
 export function filterJob(job: JobInput): FilterResult {
   const text = `${job.title} ${job.description || ''}`;
 
-  if (!isRemote(job)) {
+  if (!isFullyRemote(job)) {
     return { accepted: false, reason: 'Not a remote job' };
   }
 

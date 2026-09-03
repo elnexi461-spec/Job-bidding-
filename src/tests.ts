@@ -145,5 +145,162 @@ test('canonical_url falls back to url when not provided', () => {
   assert.strictEqual(norm.canonical_url, 'https://jobs.cloudco.com/go-dev');
 });
 
+// 10. Qualification accepts fully remote software roles
+test('Fully remote Software Engineer qualifies', () => {
+  const result = filterJob({
+    title: 'Senior Software Engineer',
+    company: 'SoftwareCo',
+    source: 'manual',
+    remote_type: 'remote',
+    location: 'Remote',
+  });
+  assert.deepStrictEqual(result, {
+    accepted: true,
+    reason: 'Good match: Software Engineer',
+  });
+});
+
+// 11. Hybrid jobs are rejected even if another field mentions remote
+test('Hybrid job is rejected as not fully remote', () => {
+  const result = filterJob({
+    title: 'Backend Engineer',
+    company: 'HybridCo',
+    source: 'manual',
+    remote_type: 'hybrid',
+    location: 'Remote and hybrid',
+  });
+  assert.deepStrictEqual(result, {
+    accepted: false,
+    reason: 'Not a remote job',
+  });
+});
+
+// 12. Onsite jobs are rejected
+test('Onsite job is rejected by qualification', () => {
+  const result = filterJob({
+    title: 'Cloud Engineer',
+    company: 'OnsiteCo',
+    source: 'manual',
+    remote_type: 'onsite',
+    location: 'New York, NY',
+  });
+  assert.strictEqual(result.accepted, false);
+  assert.strictEqual(result.reason, 'Not a remote job');
+});
+
+// 13. Non-IT jobs are rejected
+test('Non-IT role is rejected', () => {
+  const result = filterJob({
+    title: 'Remote Marketing Specialist',
+    company: 'MarketingCo',
+    source: 'manual',
+    remote_type: 'remote',
+    location: 'Remote',
+  });
+  assert.deepStrictEqual(result, {
+    accepted: false,
+    reason: 'Not a Software & IT role',
+  });
+});
+
+// 14. Leadership roles are rejected
+test('Manager role is rejected', () => {
+  const result = filterJob({
+    title: 'Remote Software Engineering Manager',
+    company: 'LeadershipCo',
+    source: 'manual',
+    remote_type: 'remote',
+    location: 'Remote',
+  });
+  assert.strictEqual(result.accepted, false);
+  assert.strictEqual(result.reason, 'Excluded role: Manager');
+});
+
+test('Architect role is rejected', () => {
+  const result = filterJob({
+    title: 'Remote Solutions Architect',
+    company: 'ArchitectureCo',
+    source: 'manual',
+    remote_type: 'remote',
+    location: 'Remote',
+  });
+  assert.strictEqual(result.accepted, false);
+  assert.strictEqual(result.reason, 'Excluded role: Architect');
+});
+
+test('Designer role is rejected', () => {
+  const result = filterJob({
+    title: 'Remote Product Designer',
+    company: 'DesignCo',
+    source: 'manual',
+    remote_type: 'remote',
+    location: 'Remote',
+  });
+  assert.strictEqual(result.accepted, false);
+  assert.strictEqual(result.reason, 'Excluded role: Designer');
+});
+
+// 15. Preferred software roles qualify
+test('Python, Go, Cloud, Backend, and Frontend roles qualify', () => {
+  const roles = [
+    'Remote Python Developer',
+    'Remote Go Developer',
+    'Remote Cloud Engineer',
+    'Remote Backend Engineer',
+    'Remote Frontend Developer',
+  ];
+
+  for (const title of roles) {
+    const result = filterJob({
+      title,
+      company: 'EngineeringCo',
+      source: 'manual',
+      remote_type: 'remote',
+      location: 'Remote',
+    });
+    assert.strictEqual(result.accepted, true, title);
+  }
+});
+
+// 16. Missing or ambiguous remote information is rejected
+test('Missing remote information is rejected', () => {
+  const result = filterJob({
+    title: 'Backend Engineer',
+    company: 'UnknownLocationCo',
+    source: 'manual',
+  });
+  assert.deepStrictEqual(result, {
+    accepted: false,
+    reason: 'Not a remote job',
+  });
+});
+
+test('Remote-friendly is not assumed to be fully remote', () => {
+  const result = filterJob({
+    title: 'Backend Engineer',
+    company: 'FlexibleCo',
+    source: 'manual',
+    remote_type: 'remote-friendly',
+    location: 'Remote-friendly',
+  });
+  assert.deepStrictEqual(result, {
+    accepted: false,
+    reason: 'Not a remote job',
+  });
+});
+
+// 17. Qualification decisions are deterministic
+test('Qualification result is deterministic', () => {
+  const job: JobInput = {
+    title: 'Remote Platform Engineer',
+    company: 'DeterministicCo',
+    source: 'manual',
+    remote_type: 'remote',
+    location: 'Remote',
+    description: 'Build reliable developer infrastructure.',
+  };
+  assert.deepStrictEqual(filterJob(job), filterJob(job));
+});
+
 console.log(`\nResults: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);

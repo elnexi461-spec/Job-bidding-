@@ -9,7 +9,7 @@ function mockFetch(response: unknown, status = 200): typeof fetch {
       statusText: status === 200 ? 'OK' : 'Error',
       json: async () => response,
       text: async () => JSON.stringify(response),
-    } as Response);
+    } as unknown as Response);
 }
 
 let passed = 0;
@@ -147,7 +147,7 @@ await test('Invalid JSON throws descriptive error', async () => {
         throw new Error('parse error');
       },
       text: async () => 'not json',
-    } as Response);
+    } as unknown as Response);
 
   const config: SourceConfig = {
     name: 'BadJsonCo',

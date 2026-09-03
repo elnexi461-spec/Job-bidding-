@@ -3,7 +3,7 @@ import { SourceConfig, FetchFn } from './types.js';
 import { fetchGreenhouse } from './greenhouse.js';
 import { fetchLever } from './lever.js';
 
-export { SourceConfig, FetchFn } from './types.js';
+export type { SourceConfig, FetchFn } from './types.js';
 
 export async function fetchJobs(
   config: SourceConfig,

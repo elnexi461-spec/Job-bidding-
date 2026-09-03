@@ -184,17 +184,15 @@ await test('Duplicate canonical_url is ignored', async () => {
     content_hash: 'newhash7890',
   };
 
-  // external_id check returns nothing (empty external_id)
-  // canonical_url check returns existing
-  mock.setNextResults([[], [existing]]);
+  // Empty external_id is skipped; canonical_url check returns existing.
+  mock.setNextResults([[existing]]);
 
   const result = await upsertJob(job, mock as unknown as Pool);
 
   assert.strictEqual(result.isNew, false);
   assert.strictEqual(result.job.id, 7);
-  assert.strictEqual(mock.calls.length, 2);
-  assert.ok(mock.calls[0].sql.includes('external_id'));
-  assert.ok(mock.calls[1].sql.includes('canonical_url'));
+  assert.strictEqual(mock.calls.length, 1);
+  assert.ok(mock.calls[0].sql.includes('canonical_url'));
 });
 
 await test('Duplicate content_hash is ignored', async () => {
@@ -236,15 +234,16 @@ await test('Duplicate content_hash is ignored', async () => {
     content_hash: 'duphash123456789',
   };
 
-  // external_id: nothing, canonical_url: nothing, content_hash: existing
-  mock.setNextResults([[], [], [existing]]);
+  // Empty external_id is skipped; canonical_url returns nothing;
+  // content_hash returns existing.
+  mock.setNextResults([[], [existing]]);
 
   const result = await upsertJob(job, mock as unknown as Pool);
 
   assert.strictEqual(result.isNew, false);
   assert.strictEqual(result.job.id, 9);
-  assert.strictEqual(mock.calls.length, 3);
-  assert.ok(mock.calls[2].sql.includes('content_hash'));
+  assert.strictEqual(mock.calls.length, 2);
+  assert.ok(mock.calls[1].sql.includes('content_hash'));
 });
 
 await test('countJobs returns the count', async () => {
