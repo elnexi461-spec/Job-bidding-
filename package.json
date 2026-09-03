@@ -1,0 +1,29 @@
+{
+  "name": "job-tracker",
+  "version": "1.0.0",
+  "description": "Remote Software & IT job application tracker backend",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "tsx src/server.ts",
+    "db:init": "tsx src/db.ts",
+    "test": "tsx src/tests.ts && tsx src/sources.test.ts && tsx src/jobs.test.ts",
+    "test:sources": "tsx src/sources.test.ts",
+    "test:jobs": "tsx src/jobs.test.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "fastify": "^5.0.0",
+    "pg": "^8.13.0",
+    "dotenv": "^16.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.11.0",
+    "typescript": "^5.6.0",
+    "tsx": "^4.19.0"
+  }
+}
