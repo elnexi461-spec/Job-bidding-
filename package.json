@@ -9,7 +9,7 @@
     "start": "node dist/server.js",
     "dev": "tsx src/server.ts",
     "db:init": "tsx src/db.ts",
-    "test": "tsx src/tests.ts && tsx src/sources.test.ts && tsx src/jobs.test.ts && tsx src/scoring.test.ts",
+    "test": "tsx src/tests.ts && tsx src/sources.test.ts && tsx src/jobs.test.ts && tsx src/scoring.test.ts && tsx src/applications.test.ts",
     "test:sources": "tsx src/sources.test.ts",
     "test:jobs": "tsx src/jobs.test.ts"
   },

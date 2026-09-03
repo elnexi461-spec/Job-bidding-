@@ -62,12 +62,22 @@ CREATE INDEX IF NOT EXISTS idx_jobs_source ON jobs(source);
 CREATE TABLE IF NOT EXISTS applications (
   id SERIAL PRIMARY KEY,
   job_id INTEGER REFERENCES jobs(id) ON DELETE SET NULL,
-  status VARCHAR(50) NOT NULL DEFAULT 'applied',
+  status VARCHAR(50) NOT NULL DEFAULT 'queued',
+  job_score INTEGER,
+  canonical_url TEXT,
   applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   notes TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Preserve the application queue fields when upgrading an existing database.
+ALTER TABLE applications ADD COLUMN IF NOT EXISTS job_score INTEGER;
+ALTER TABLE applications ADD COLUMN IF NOT EXISTS canonical_url TEXT;
+ALTER TABLE applications ALTER COLUMN status SET DEFAULT 'queued';
+CREATE UNIQUE INDEX IF NOT EXISTS idx_applications_unique_job
+  ON applications(job_id)
+  WHERE job_id IS NOT NULL;
 
 -- Interviews table: tracks interview rounds for each application
 CREATE TABLE IF NOT EXISTS interviews (
